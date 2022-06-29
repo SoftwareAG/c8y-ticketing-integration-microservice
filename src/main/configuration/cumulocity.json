@@ -1,0 +1,44 @@
+{
+	"apiVersion":"1",
+  	"version":"@project.version@",
+  	"provider": {
+		"name":"Cumulocity GmbH"
+  	},
+  	"isolation":"MULTI_TENANT",
+  	"requiredRoles": [
+		"ROLE_ALARM_READ",
+		"ROLE_ALARM_ADMIN",
+    	"ROLE_INVENTORY_ADMIN",
+    	"ROLE_INVENTORY_READ",
+    	"ROLE_IDENTITY_ADMIN",
+    	"ROLE_IDENTITY_READ"
+  	],
+  	"roles":[
+  	],
+  	"resources": {
+		"cpu": "1",
+		"memory": "1G"
+	},
+  	"livenessProbe":{
+    	"httpGet":{
+      		"path": "/health",
+      		"port": 80
+    	},
+    	"initialDelaySeconds": 360,
+    	"periodSeconds": 10
+  	},
+  	"readinessProbe":{
+    	"httpGet":{
+      		"path": "/health",
+      		"port": 80
+    	},
+    	"initialDelaySeconds": 30,
+    	"periodSeconds": 10
+  	},
+  	"settings":[{ 
+		"key": "sample-microservice-setting",
+      	"defaultValue": "true",
+      	"editable": true,
+      	"valueSchema": {"type": "boolean"}
+    }]
+}
