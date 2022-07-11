@@ -11,17 +11,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.c8y.sag.cache.ConfigCache;
+import com.c8y.sag.constants.Constants;
 import com.c8y.sag.model.DeviceAlarmMapping;
 import com.c8y.sag.model.TicketingPlatformConfig;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.model.ID;
 import com.cumulocity.model.idtype.GId;
+import com.cumulocity.model.option.OptionPK;
 import com.cumulocity.rest.representation.identity.ExternalIDRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
+import com.cumulocity.rest.representation.tenant.OptionRepresentation;
 import com.cumulocity.sdk.client.Platform;
 import com.cumulocity.sdk.client.SDKException;
 import com.cumulocity.sdk.client.identity.IdentityApi;
 import com.cumulocity.sdk.client.inventory.InventoryApi;
+import com.cumulocity.sdk.client.option.TenantOptionApi;
 
 /**
  * 
@@ -33,15 +37,7 @@ import com.cumulocity.sdk.client.inventory.InventoryApi;
 public class ConfigService {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(ConfigService.class);
-	
-	private static final String CONFIG_MANAGED_OBJECT_EXTERNAL_ID = "ticketingintegrationms";
-	private static final String CONFIG_MANAGED_OBJECT_EXTERNAL_ID_TYPE = "ticketingintegrationms";
-	
-	private static final String CONFIG_MANAGED_OBJECT_NAME = "ticketingintegrationconfig";
-	private static final String TICKET_SERVICE_CONFIG_PROPERTY_NAME = "customTicketingPlatformConfig";
-	private static final String DEVICE_ALARM_MAPPING_PROPERTY_NAME = "customDeviceAlarmMappingConfig";
-	
-	private static final String PLACEHOLDER_PASSWORD = "dummypassword";
+
 
 	@Autowired
 	private Platform platform;
@@ -55,8 +51,8 @@ public class ConfigService {
 			IdentityApi identityApi = platform.getIdentityApi();
 			
 			ID id = new ID();
-			id.setValue(CONFIG_MANAGED_OBJECT_EXTERNAL_ID);
-			id.setType(CONFIG_MANAGED_OBJECT_EXTERNAL_ID_TYPE);
+			id.setValue(Constants.CONFIG_MANAGED_OBJECT_EXTERNAL_ID);
+			id.setType(Constants.CONFIG_MANAGED_OBJECT_EXTERNAL_ID_TYPE);
 			
 			ExternalIDRepresentation extIDRep = identityApi.getExternalId(id);
 			
@@ -97,9 +93,19 @@ public class ConfigService {
 		try {
 			ManagedObjectRepresentation existingConfigMO = this.getConfigManagedObject();
 			if(existingConfigMO != null) {
-				Map<String, Object> tpConfigAsMap = (HashMap<String, Object>) existingConfigMO.getProperty(TICKET_SERVICE_CONFIG_PROPERTY_NAME);
-				if(hidePassword) {
-					tpConfigAsMap.put("password", PLACEHOLDER_PASSWORD);
+				Map<String, Object> tpConfigAsMap = (HashMap<String, Object>) existingConfigMO.getProperty(Constants.TICKET_SERVICE_CONFIG_PROPERTY_NAME);
+				if(!hidePassword) {
+					try {
+						TenantOptionApi tenantOptionApi = platform.getTenantOptionApi();
+						OptionPK optionPK = new OptionPK();
+						optionPK.setCategory("secrets");
+						optionPK.setKey("credentials."+Constants.OPTION_CREDENTIAL_KEY);
+						OptionRepresentation or = tenantOptionApi.getOption(optionPK);
+						tpConfigAsMap.put("password", or.getValue());
+					} catch(SDKException sdke) {
+						LOGGER.warn("Password is not stored yet.");
+					}
+					
 				}
 				return new TicketingPlatformConfig(tpConfigAsMap);
 			} else {
@@ -111,26 +117,31 @@ public class ConfigService {
 		}
 	}
 	
+	
 	/**
 	 * To add ticketing platform configuration
 	 * @param tspConfig
 	 */
-	public String saveTicketingPlatformConfig(TicketingPlatformConfig tspConfig) {
+	public String saveTicketingPlatformConfig(TicketingPlatformConfig tpConfig) {
 		try {
+			// Save the password securely
+			storePassword(tpConfig.getPassword());
+			
+			// Save managed object
+			tpConfig.setPassword(Constants.PLACEHOLDER_PASSWORD);
 			InventoryApi inventoryApi = platform.getInventoryApi();
 			ManagedObjectRepresentation mor = new ManagedObjectRepresentation();
-			mor.setName(CONFIG_MANAGED_OBJECT_NAME);
-			mor.setProperty(TICKET_SERVICE_CONFIG_PROPERTY_NAME, tspConfig);
-			mor.setProperty(DEVICE_ALARM_MAPPING_PROPERTY_NAME, null);
+			mor.setName(Constants.CONFIG_MANAGED_OBJECT_NAME);
+			mor.setProperty(Constants.TICKET_SERVICE_CONFIG_PROPERTY_NAME, tpConfig);
+			mor.setProperty(Constants.DEVICE_ALARM_MAPPING_PROPERTY_NAME, null);
 			ManagedObjectRepresentation newMor = inventoryApi.create(mor);
 			
 			if(newMor != null) {
-				
 				IdentityApi identityApi = platform.getIdentityApi();
 				
 				ExternalIDRepresentation extIDRep = new ExternalIDRepresentation();
-				extIDRep.setExternalId(CONFIG_MANAGED_OBJECT_EXTERNAL_ID);
-				extIDRep.setType(CONFIG_MANAGED_OBJECT_EXTERNAL_ID_TYPE);
+				extIDRep.setExternalId(Constants.CONFIG_MANAGED_OBJECT_EXTERNAL_ID);
+				extIDRep.setType(Constants.CONFIG_MANAGED_OBJECT_EXTERNAL_ID_TYPE);
 				extIDRep.setManagedObject(newMor);
 				identityApi.create(extIDRep);
 				
@@ -152,7 +163,7 @@ public class ConfigService {
 	 * To update ticketing platform configuration
 	 * @param tspConfig
 	 */
-	public String updateTicketingPlatformConfig(TicketingPlatformConfig tspConfig) throws SDKException {
+	public String updateTicketingPlatformConfig(TicketingPlatformConfig tpConfig) throws SDKException {
 		try {
 			InventoryApi inventoryApi = platform.getInventoryApi();
 			ManagedObjectRepresentation existingConfigManagedObject = this.getConfigManagedObject();
@@ -160,12 +171,12 @@ public class ConfigService {
 				LOGGER.info("Ticketing Platform config doesn't exist. Cannot be updated.");
 				return null;
 			} else {
-				if(tspConfig.getPassword().equals(PLACEHOLDER_PASSWORD)) {
-					String existingPassword = (String)((HashMap<String, Object>) existingConfigManagedObject.getProperty(TICKET_SERVICE_CONFIG_PROPERTY_NAME)).get("password");
-					tspConfig.setPassword(existingPassword);
+				if(!tpConfig.getPassword().equals(Constants.PLACEHOLDER_PASSWORD)) {
+					storePassword(tpConfig.getPassword());
 				}
+				tpConfig.setPassword(Constants.PLACEHOLDER_PASSWORD);
 				existingConfigManagedObject.setLastUpdatedDateTime(null);
-				existingConfigManagedObject.setProperty(TICKET_SERVICE_CONFIG_PROPERTY_NAME, tspConfig);
+				existingConfigManagedObject.setProperty(Constants.TICKET_SERVICE_CONFIG_PROPERTY_NAME, tpConfig);
 				ManagedObjectRepresentation updatedMor = inventoryApi.update(existingConfigManagedObject);
 				
 				if(updatedMor != null) {
@@ -213,9 +224,9 @@ public class ConfigService {
 				LOGGER.info("Configuration managed object doesn't exist. Device Alarm mapping cannot be added.");
 				return false;
 			} else {
-				List<DeviceAlarmMapping> existingDamList = (List<DeviceAlarmMapping>) existingConfigMO.getProperty(DEVICE_ALARM_MAPPING_PROPERTY_NAME);
+				List<DeviceAlarmMapping> existingDamList = (List<DeviceAlarmMapping>) existingConfigMO.getProperty(Constants.DEVICE_ALARM_MAPPING_PROPERTY_NAME);
 				existingDamList = damList;
-				existingConfigMO.setProperty(DEVICE_ALARM_MAPPING_PROPERTY_NAME, existingDamList);
+				existingConfigMO.setProperty(Constants.DEVICE_ALARM_MAPPING_PROPERTY_NAME, existingDamList);
 				existingConfigMO.setLastUpdatedDateTime(null);
 				inventoryApi.update(existingConfigMO);
 				
@@ -242,7 +253,7 @@ public class ConfigService {
 				LOGGER.info("Configuration managed object doesn't exist. Nothing to get.");
 				return null;
 			} else {
-				List<HashMap<String, String>> existingDAMappings = (ArrayList<HashMap<String, String>>) existingConfigMO.getProperty(DEVICE_ALARM_MAPPING_PROPERTY_NAME);
+				List<HashMap<String, String>> existingDAMappings = (ArrayList<HashMap<String, String>>) existingConfigMO.getProperty(Constants.DEVICE_ALARM_MAPPING_PROPERTY_NAME);
 				
 				if(existingDAMappings == null) {
 					return null;
@@ -262,6 +273,15 @@ public class ConfigService {
 			LOGGER.error("Exception getting Device Alarm Mappings. "+sdke);
 			throw sdke;
 		}
+	}
+	
+	private void storePassword(String password) {
+		TenantOptionApi tenantOptionApi =  platform.getTenantOptionApi();
+		OptionRepresentation or = new OptionRepresentation();
+		or.setCategory("secrets");
+		or.setKey("credentials."+Constants.OPTION_CREDENTIAL_KEY);
+		or.setValue(password);
+		tenantOptionApi.save(or);
 	}
 	
 }

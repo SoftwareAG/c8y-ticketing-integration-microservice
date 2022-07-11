@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.c8y.sag.cache.ConfigCache;
+import com.c8y.sag.constants.Constants;
 import com.c8y.sag.model.TicketingPlatformConfig;
 import com.c8y.sag.model.TicketingPlatformNameEnum;
 import com.c8y.sag.service.AlarmSubscriptionService;
@@ -62,17 +63,17 @@ public class TicketingPlatformConfigController {
 	}
 	
 	@PostMapping(consumes = "application/json", produces = "application/json")
-	public ResponseEntity<Object> addTicketingPlatformConfig(@RequestBody TicketingPlatformConfig newTpConfig) {
+	public ResponseEntity<Object> addTicketingPlatformConfig(@RequestBody TicketingPlatformConfig newTPConfig) {
 		JSONObject jsonObject = new JSONObject();
 		try {
-			String validationMessage = validateTPConfig(newTpConfig);
+			String validationMessage = validateTPConfig(newTPConfig);
 			if(validationMessage != "") {
 				jsonObject.put("message", validationMessage);
 				return new ResponseEntity<Object>(jsonObject.toMap(), HttpStatus.BAD_REQUEST);
 			}
-			TicketingPlatformConfig existingTspConfig = this.configService.getTicketingPlatformConfig(true);
-			if(existingTspConfig == null) {
-				String recordId = configService.saveTicketingPlatformConfig(newTpConfig);
+			TicketingPlatformConfig existingTPConfig = this.configService.getTicketingPlatformConfig(true);
+			if(existingTPConfig == null) {
+				String recordId = configService.saveTicketingPlatformConfig(newTPConfig);
 				JSONObject idJSONObject = new JSONObject();
 				idJSONObject.put("id", recordId);
 				jsonObject.put("record", idJSONObject);
@@ -99,16 +100,16 @@ public class TicketingPlatformConfigController {
 	}
 	
 	@PutMapping(consumes = "application/json", produces = "application/json")
-	public ResponseEntity<Object> updateTicketingPlatformConfig(@RequestBody TicketingPlatformConfig updatedTpConfig) {
+	public ResponseEntity<Object> updateTicketingPlatformConfig(@RequestBody TicketingPlatformConfig updatedTPConfig) {
 		JSONObject jsonObject = new JSONObject();
 		try {
-			String validationMessage = validateTPConfig(updatedTpConfig);
+			String validationMessage = validateTPConfig(updatedTPConfig);
 			if(validationMessage != "") {
 				jsonObject.put("message", validationMessage);
 				return new ResponseEntity<Object>(jsonObject.toMap(), HttpStatus.BAD_REQUEST);
 			}
 			
-			String recordId = configService.updateTicketingPlatformConfig(updatedTpConfig);
+			String recordId = configService.updateTicketingPlatformConfig(updatedTPConfig);
 			if(recordId == null) {
 				jsonObject.put("message", "Config doesn't exist");
 				return new ResponseEntity<Object>(jsonObject.toMap(), HttpStatus.BAD_REQUEST);

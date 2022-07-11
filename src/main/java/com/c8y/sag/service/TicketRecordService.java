@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.c8y.sag.constants.Constants;
 import com.c8y.sag.model.TicketCreationRecord;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
@@ -28,9 +29,6 @@ public class TicketRecordService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TicketRecordService.class);
 	
-	private static final String TICKET_CREATION_RECORD_NAME = "Ticketing Integration - Ticket Creation Record";
-	private static final String TICKET_CREATION_RECORD_TYPE = "ti_tcr";
-	private static final String TICKET_CREATION_RECORD_FRAGMENT_PREFIX = "ti_did_";
 	
 	@Autowired
 	private Platform platform;
@@ -39,9 +37,9 @@ public class TicketRecordService {
 		try {
 			InventoryApi inventoryApi = platform.getInventoryApi();
 			ManagedObjectRepresentation mor = new ManagedObjectRepresentation();
-			mor.setName(TICKET_CREATION_RECORD_NAME);
-			mor.setType(TICKET_CREATION_RECORD_TYPE);
-			mor.setProperty(TICKET_CREATION_RECORD_FRAGMENT_PREFIX + alarmRep.getSource().getId().getValue(), "{}");
+			mor.setName(Constants.TICKET_CREATION_RECORD_NAME);
+			mor.setType(Constants.TICKET_CREATION_RECORD_TYPE);
+			mor.setProperty(Constants.TICKET_CREATION_RECORD_FRAGMENT_PREFIX + alarmRep.getSource().getId().getValue(), "{}");
 			mor.setProperty("deviceId", alarmRep.getSource().getId().getValue());
 			mor.setProperty("alarmId", alarmRep.getId().getValue());
 			mor.setProperty("ticketId", ticketId);
@@ -57,9 +55,9 @@ public class TicketRecordService {
 			InventoryApi inventoryApi = platform.getInventoryApi();
 			InventoryFilter inventoryFilter = null;
 			if(deviceId == null || deviceId.isBlank()) {
-				inventoryFilter = new InventoryFilter().byType(TICKET_CREATION_RECORD_TYPE);
+				inventoryFilter = new InventoryFilter().byType(Constants.TICKET_CREATION_RECORD_TYPE);
 			} else {
-				inventoryFilter = new InventoryFilter().byFragmentType(TICKET_CREATION_RECORD_FRAGMENT_PREFIX + deviceId);
+				inventoryFilter = new InventoryFilter().byFragmentType(Constants.TICKET_CREATION_RECORD_FRAGMENT_PREFIX + deviceId);
 			}
 			ManagedObjectCollection moc = inventoryApi.getManagedObjectsByFilter(inventoryFilter);
 			List<TicketCreationRecord> tcrList = new ArrayList<TicketCreationRecord>();
@@ -77,7 +75,7 @@ public class TicketRecordService {
 	public void deleteTicketCreationRecords() {
 		try {
 			InventoryApi inventoryApi = platform.getInventoryApi();
-			InventoryFilter inventoryFilter = new InventoryFilter().byType(TICKET_CREATION_RECORD_TYPE);
+			InventoryFilter inventoryFilter = new InventoryFilter().byType(Constants.TICKET_CREATION_RECORD_TYPE);
 			ManagedObjectCollection moc = inventoryApi.getManagedObjectsByFilter(inventoryFilter);
 			if(moc != null) {
 				for(ManagedObjectRepresentation mor: moc.get().allPages()) {
