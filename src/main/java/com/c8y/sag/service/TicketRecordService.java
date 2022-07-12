@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.c8y.sag.constants.Constants;
 import com.c8y.sag.model.TicketCreationRecord;
+import com.cumulocity.model.idtype.GId;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.rest.representation.inventory.ManagedObjectRepresentation;
 import com.cumulocity.sdk.client.Platform;
@@ -62,7 +63,7 @@ public class TicketRecordService {
 			ManagedObjectCollection moc = inventoryApi.getManagedObjectsByFilter(inventoryFilter);
 			List<TicketCreationRecord> tcrList = new ArrayList<TicketCreationRecord>();
 			if(moc != null) {
-				for(ManagedObjectRepresentation mor: moc.get().allPages()) {
+				for(ManagedObjectRepresentation mor: moc.get(2000).allPages()) {
 					tcrList.add(map(mor));
 				}
 			}
@@ -74,14 +75,18 @@ public class TicketRecordService {
 	
 	public void deleteTicketCreationRecords() {
 		try {
+			List<GId> idList = new ArrayList<GId>();
 			InventoryApi inventoryApi = platform.getInventoryApi();
 			InventoryFilter inventoryFilter = new InventoryFilter().byType(Constants.TICKET_CREATION_RECORD_TYPE);
 			ManagedObjectCollection moc = inventoryApi.getManagedObjectsByFilter(inventoryFilter);
 			if(moc != null) {
-				for(ManagedObjectRepresentation mor: moc.get().allPages()) {
-					inventoryApi.delete(mor.getId());
-					LOGGER.info("Deleted Ticket Creation Record: "+mor.getId().getValue());
+				for(ManagedObjectRepresentation mor: moc.get(2000).allPages()) {
+					idList.add(mor.getId());
 				}
+			}
+			for(GId id: idList) {
+				inventoryApi.delete(id);
+				LOGGER.info("Deleted Ticket Creation Record: "+id.getValue());
 			}
 		} catch(SDKException sdke) {
 			throw sdke;
