@@ -242,7 +242,6 @@ public class TicketController {
 			}
 			
 			List<TicketComment> tcList = tpService.getTicketComments(id);
-			
 			jsonObject.put("records", tcList);
 			return new ResponseEntity<String>(jsonObject.toString(), HttpStatus.OK);
 		} catch(Exception e) {

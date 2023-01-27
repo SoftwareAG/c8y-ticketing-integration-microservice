@@ -3,7 +3,6 @@ package com.c8y.sag.service.tp;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.glassfish.jersey.server.model.Suspendable;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -20,7 +19,6 @@ import org.springframework.web.client.RestTemplate;
 import com.c8y.sag.cache.ConfigCache;
 import com.c8y.sag.model.TicketComment;
 import com.c8y.sag.model.TicketRecord;
-import com.c8y.sag.model.TicketRecordComment;
 import com.cumulocity.microservice.subscription.service.MicroserviceSubscriptionsService;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 
@@ -136,7 +134,7 @@ public class ExternalPlatformService implements TicketingPlatformService {
 				throw new NullPointerException("Tenant name from MicroserviceSubscriptionService is null.");
 			}
 			
-			String url = ConfigCache.tpConfigMap.get(tenantName).getTenantUrl() + "/tickets"+ticketId+"/comments";
+			String url = ConfigCache.tpConfigMap.get(tenantName).getTenantUrl() + "/tickets/"+ticketId+"/comments";
 			
 			RestTemplate restTemplate = new RestTemplate();
 			
