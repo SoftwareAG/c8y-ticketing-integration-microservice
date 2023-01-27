@@ -5,7 +5,7 @@
 	
 	<groupId>com.c8y.sag</groupId>
 	<artifactId>ticketing</artifactId>
-	<version>1.0.2</version>
+	<version>1.0.3</version>
 	<name>ticketing</name>
 	<description>Ticketing Integration microservice for Cumulocity IoT by Global Presales team</description>
 	
