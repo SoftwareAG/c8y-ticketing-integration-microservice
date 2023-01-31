@@ -2,7 +2,7 @@
 
 This microservice allows integration of any ticketing platform with Cumulocity IoT. It supports integration with webMethods AgileApps out-of-the-box. However, for integration with other platforms like ServiceNow, ZenDesk, etc. it relies on other integration platforms like webMethods.io.
 
-Please refer to https://github.com/kalpshekhar-sag/c8y-ticketing-integration-accelerator for complete overview of the Ticketing Integration Accelerator for Cumulocity IoT.
+Please refer to https://github.com/SoftwareAG/c8y-ticketing-integration-accelerator for complete overview of the Ticketing Integration Accelerator for Cumulocity IoT.
 
 ### Installation
 1. Download the latest `ticketing-{version}.zip` file from the Releases section.
