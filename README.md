@@ -2,11 +2,7 @@
 
 This microservice allows integration of any ticketing platform with Cumulocity IoT. It supports integration with webMethods AgileApps out-of-the-box. However, for integration with other platforms like ServiceNow, ZenDesk, etc. it relies on other integration platforms like webMethods.io.
 
-### Features
-1. `Ticketing Integration Setup Widget` https://github.com/SoftwareAG/c8y-ticketing-integration-setup-widget - configure and manage integration with Ticketing Platform.
-	1. Configure device and alarm mappings to enable automatic creation of tickets.
-2. `Ticketing Integration Viewer Widget` https://github.com/SoftwareAG/c8y-ticketing-integration-viewer-widget - view tickets and related comments in a table format.
-3. `Ticketing Integration Alarms Widget` https://github.com/SoftwareAG/c8y-ticketing-integration-alarms-widget - view active alarms and create tickets.
+Please refer to https://github.com/SoftwareAG/c8y-ticketing-integration-accelerator for complete overview of the Ticketing Integration Accelerator for Cumulocity IoT.
 
 ### Installation
 1. Download the latest `ticketing-{version}.zip` file from the Releases section.
@@ -26,7 +22,6 @@ This microservice allows integration of any ticketing platform with Cumulocity I
 		3. Create ticket - To create a new ticket in the Ticketing platform.
 	2. Three APIs need to be as per the API definition in the swagger file `apis-swagger.yaml` attached in the Releases section.
 	3. Three APIs can be developed and made accessible using any platform. webMethods.io is recommended as it provide connectors for almost all the ticketing platforms out-of-the-box and allows to create APIs by importing the swagger file.
-Once above requirements are met, download the `Ticketing Integration Setup Widget` https://github.com/SoftwareAG/c8y-ticketing-integration-setup-widget and refer to widget documentation.
 
 ### Development - to do the enhancements and testing locally
 1. Refer to https://cumulocity.com/guides/microservice-sdk/java/#create-the-application and create a proxy microservice application. Provide name as 'ticketing-dev' and key as 'ticketing-dev-key'.
