@@ -57,7 +57,7 @@ public class ExternalPlatformService implements TicketingPlatformService {
 			
 			String desc = "Alarm type: "+ alarmRep.getType()+" Alarm text: "+ alarmRep.getText();
 			if(comments != null && !comments.isBlank()) {
-				desc = desc + " Comments: "+comments;
+				desc = desc + " Additional description: "+comments;
 			}
 			
 			JSONObject requestBody = new JSONObject();

@@ -74,33 +74,6 @@ public class TicketController {
 	public ResponseEntity<String> getTickets(@RequestParam(value = "deviceId", required = false) String deviceId, @RequestParam(value = "statusId", required = false) String statusId, @RequestParam(value = "pageSize", required = false) String pageSize) {
 		JSONObject jsonObject = new JSONObject();
 		try {
-			if(deviceId != null && deviceId != "") {
-				try {
-					Integer.parseInt(deviceId);
-				} catch(NumberFormatException nfe) {
-					jsonObject.put("message", "Invalid device id.");
-					return new ResponseEntity<String>(jsonObject.toString(), HttpStatus.BAD_REQUEST);
-				}
-				
-			}
-			if(statusId != null && statusId != "") {
-				try {
-					Integer.parseInt(statusId);
-				} catch(NumberFormatException nfe) {
-					jsonObject.put("message", "Invalid status id.");
-					return new ResponseEntity<String>(jsonObject.toString(), HttpStatus.BAD_REQUEST);
-				}
-				
-			}
-			if(pageSize != null && pageSize != "") {
-				try {
-					Integer.parseInt(pageSize);
-				} catch(NumberFormatException nfe) {
-					jsonObject.put("message", "Invalid page size.");
-					return new ResponseEntity<String>(jsonObject.toString(), HttpStatus.BAD_REQUEST);
-				}
-			}
-			
 			// Get Ticketing Platform Service object based on Platform in TPConfiguration
 			if(ConfigCache.tpConfigMap.get(microserviceSubscriptionService.getTenant()).getName().getName().equals(TicketingPlatformNameEnum.AGILEAPPS.getName())) {
 				tpService = beanFactory.getBean(AgileAppsService.class);
@@ -135,7 +108,6 @@ public class TicketController {
 					tList.add(t);
 				}
 			}
-			
 			jsonObject.put("records", tList);
 			return new ResponseEntity<String>(jsonObject.toString(), HttpStatus.OK);
 		} catch(Exception e) {
@@ -159,14 +131,8 @@ public class TicketController {
 			if(map == null || !map.containsKey("alarmId")) {
 				jsonObject.put("message", "Alarm id is missing.");
 				return new ResponseEntity<String>(jsonObject.toString(), HttpStatus.BAD_REQUEST);
-			} else {
-				try {
-					Integer.parseInt(map.get("alarmId"));
-				} catch(NumberFormatException nfe) {
-					jsonObject.put("message", "Invalid alarm id.");
-					return new ResponseEntity<String>(jsonObject.toString(), HttpStatus.BAD_REQUEST);
-				}
 			}
+			
 			AlarmRepresentation alarmRep = c8yService.getAlarmById(map.get("alarmId"));
 			if(alarmRep == null) {
 				jsonObject.put("message", "Invalid alarm id.");
@@ -227,12 +193,6 @@ public class TicketController {
 	public ResponseEntity<String> getTicketComments(@PathVariable("id") String id) {
 		JSONObject jsonObject = new JSONObject();
 		try {
-			try {
-				Integer.parseInt(id);
-			} catch(NumberFormatException nfe) {
-				jsonObject.put("message", "Invalid id.");
-				return new ResponseEntity<String>(jsonObject.toString(), HttpStatus.BAD_REQUEST);
-			}
 			
 			// Get Ticketing Platform Service object based on Platform in TPConfiguration
 			if(ConfigCache.tpConfigMap.get(microserviceSubscriptionService.getTenant()).getName().getName().equals(TicketingPlatformNameEnum.AGILEAPPS.getName())) {

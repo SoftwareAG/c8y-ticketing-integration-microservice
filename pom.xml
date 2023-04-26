@@ -5,13 +5,13 @@
 	
 	<groupId>com.c8y.sag</groupId>
 	<artifactId>ticketing</artifactId>
-	<version>1.0.3</version>
+	<version>1.4.0</version>
 	<name>ticketing</name>
 	<description>Ticketing Integration microservice for Cumulocity IoT by Global Presales team</description>
 	
 	<properties>
 		<java.version>11</java.version>
-		<c8y.version>1011.0.19</c8y.version>
+		<c8y.version>1015.0.278</c8y.version>
     	<microservice.name>ticketing</microservice.name>
     	<maven.compiler.source>11</maven.compiler.source>
      	<maven.compiler.target>11</maven.compiler.target>

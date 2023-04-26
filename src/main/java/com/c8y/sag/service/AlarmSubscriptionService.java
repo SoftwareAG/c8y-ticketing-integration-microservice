@@ -22,6 +22,7 @@ import com.cumulocity.microservice.subscription.service.MicroserviceSubscription
 import com.cumulocity.model.JSONBase;
 import com.cumulocity.rest.representation.alarm.AlarmRepresentation;
 import com.cumulocity.sdk.client.PlatformImpl;
+import com.cumulocity.sdk.client.RestConnector;
 import com.cumulocity.sdk.client.notification.Subscription;
 import com.cumulocity.sdk.client.notification.SubscriptionListener;
 
@@ -36,8 +37,12 @@ public class AlarmSubscriptionService {
 	
 	private final Logger LOGGER = LoggerFactory.getLogger(AlarmSubscriptionService.class);
 	
+	//@Autowired
+	//private PlatformImpl platform;
+	
+	
 	@Autowired
-	private PlatformImpl platform;
+	private RestConnector restConnector;
 	
 	@Autowired
 	private BeanFactory beanFactory;
@@ -58,7 +63,9 @@ public class AlarmSubscriptionService {
 	
 	public void subscribeAlarmNotifications(final String tenant) {
 		
-		final AlarmSubscriber subscriber = new AlarmSubscriber(platform);
+		//final AlarmSubscriber subscriber = new AlarmSubscriber(platform);
+		
+		final AlarmSubscriber subscriber = new AlarmSubscriber(restConnector.getPlatformParameters());
 		
 		if(AlarmSubscriptionCache.alarmSubscriptionMap.get(tenant) == null) {
 			
@@ -89,7 +96,7 @@ public class AlarmSubscriptionService {
 									microserviceSubscriptionsService.runForTenant(tenant, () -> {
 										
 										if(tpService == null) {
-											System.out.println("TP service is null 2.");
+											System.out.println("tpService is null.");
 										}
 										
 										String ticketId = null;
